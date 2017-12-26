@@ -73,8 +73,11 @@ def densenet(images, num_classes=1001, is_training=False,
 between 
 consists: BN-Conv(3X3)-ReLU
 """
-def dense_block(input_x, nb_layers, layer_name):
-    pass
+def dense_block(self,input_x, nb_layers, layer_name):
+    with tf.name_scope(layer_name):
+        layers_concat = list()
+
+        pass
 
 
 
@@ -93,7 +96,11 @@ consists: BN-ReLU-Conv(1X1)  conv produce 4K feature-maps
 def bottleneck_layer():
     pass
 
-
+def conv_layer(input, filter, kernel, stride=1, layer_name="conv"):
+    with tf.name_scope(layer_name):
+        network = tf.layers.conv2d(inputs=input, use_bias=False, filters=filter, kernel_size=kernel, strides=stride,
+                                   padding='SAME')
+        return network
 
 
 def bn_drp_scope(is_training=True, keep_prob=0.8):
