@@ -68,6 +68,34 @@ def densenet(images, num_classes=1001, is_training=False,
     return logits, end_points
 
 
+
+"""
+between 
+consists: BN-Conv(3X3)-ReLU
+"""
+def dense_block(input_x, nb_layers, layer_name):
+    pass
+
+
+
+"""
+do convolution and pooling
+consists: BN-Conv(1X1)-Pool(2X2)
+"""
+def transition_layer():
+    pass
+
+"""
+reduce the number of input feature-maps
+improve computational efficiency
+consists: BN-ReLU-Conv(1X1)  conv produce 4K feature-maps
+"""
+def bottleneck_layer():
+    pass
+
+
+
+
 def bn_drp_scope(is_training=True, keep_prob=0.8):
     keep_prob = keep_prob if is_training else 1
     with slim.arg_scope(
