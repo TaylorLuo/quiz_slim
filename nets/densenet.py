@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow.contrib.layers import batch_norm, flatten
 
 slim = tf.contrib.slim
 
@@ -76,6 +77,7 @@ consists: BN-Conv(3X3)-ReLU
 def dense_block(self,input_x, nb_layers, layer_name):
     with tf.name_scope(layer_name):
         layers_concat = list()
+        layers_concat.append(input_x)
 
         pass
 
@@ -93,14 +95,31 @@ reduce the number of input feature-maps
 improve computational efficiency
 consists: BN-ReLU-Conv(1X1)  conv produce 4K feature-maps
 """
-def bottleneck_layer():
-    pass
+def bottleneck_layer(self, x, scope):
+    with tf.name_scope(scope):
+
+        pass
 
 def conv_layer(input, filter, kernel, stride=1, layer_name="conv"):
     with tf.name_scope(layer_name):
         network = tf.layers.conv2d(inputs=input, use_bias=False, filters=filter, kernel_size=kernel, strides=stride,
                                    padding='SAME')
         return network
+
+def Relu(x):
+    return tf.nn.relu(x)
+
+def Batch_Normalization(x, train, scope):
+    with densenet_arg_scope([batch_norm],
+                            scope=scope,
+                            updates_collections=None,
+                            decay=0.9,
+                            center=True,
+                            scale=True,
+                            zero_debias_moving_mean=True):
+        return tf.cond(train,
+                       lambda : batch_norm(inputs=x, is_training=train, reuse=None),
+                       lambda : batch_norm(inputs=x, is_training=train, reuse=True))
 
 
 def bn_drp_scope(is_training=True, keep_prob=0.8):
