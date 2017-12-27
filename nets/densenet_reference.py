@@ -167,7 +167,7 @@ class DenseNet():
 
     def Dense_net(self, input_x):
         x = conv_layer(input_x, filter=2 * self.filters, kernel=[7, 7], stride=2, layer_name='conv0')
-        # x = Max_Pooling(x, pool_size=[3,3], stride=2)
+        x = Max_Pooling(x, pool_size=[3,3], stride=2)
 
 
         """
