@@ -30,22 +30,6 @@ def block(net, layers, growth, scope='block'):
     return net
 
 
-"""
-do convolution and pooling
-consists: BN-Conv(1X1)-Pool(2X2)
-"""
-
-
-def transition_layer(net, layers, growth, scope='transition'):
-    net = bn_act_conv_drp(net, growth, [1, 1], scope=scope + '_conv1x1' + str(0))
-    net = Average_pooling(net, pool_size=[2, 2], stride=2)
-    return net
-
-
-def Average_pooling(x, pool_size=[2, 2], stride=2, padding='VALID'):
-    return tf.layers.average_pooling2d(inputs=x, pool_size=pool_size, strides=stride, padding=padding)
-
-
 def densenet(images, num_classes=1001, is_training=False,
              dropout_keep_prob=0.8,
              scope='densenet'):
@@ -76,22 +60,62 @@ def densenet(images, num_classes=1001, is_training=False,
     with tf.variable_scope(scope, 'DenseNet', [images, num_classes]):
         with slim.arg_scope(bn_drp_scope(is_training=is_training,
                                          keep_prob=dropout_keep_prob)) as ssc:
-            end_point = 'Conv0_2g_3x3'
-            net = slim.conv2d(images, 2*growth, [3, 3], stride=2, scope=end_point)
-            end_points[end_point] = net
+            pass
+            ##########################
+            # Put your code here.
+            ##########################
 
-            logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None,
-                                 normalizer_fn=None, scope='Conv2d_1c_1x1')
     return logits, end_points
+
+
+
+"""
+between 
+consists: BN-Conv(3X3)-ReLU
+"""
+def dense_block(self,input_x, nb_layers, layer_name):
+    with tf.name_scope(layer_name):
+        layers_concat = list()
+        layers_concat.append(input_x)
+
+        pass
+
+
+
+"""
+do convolution and pooling
+consists: BN-Conv(1X1)-Pool(2X2)
+"""
+def transition_layer():
+    pass
+
+"""
+reduce the number of input feature-maps
+improve computational efficiency
+consists: BN-ReLU-Conv(1X1)  conv produce 4K feature-maps
+"""
+def bottleneck_layer(self, x, scope):
+    with tf.name_scope(scope):
+
+        pass
+
+def conv_layer(input, filter, kernel, stride=1, layer_name="conv"):
+    with tf.name_scope(layer_name):
+        network = tf.layers.conv2d(inputs=input, use_bias=False, filters=filter, kernel_size=kernel, strides=stride,
+                                   padding='SAME')
+        return network
+
+def Relu(x):
+    return tf.nn.relu(x)
 
 
 def bn_drp_scope(is_training=True, keep_prob=0.8):
     keep_prob = keep_prob if is_training else 1
     with slim.arg_scope(
-            [slim.batch_norm],
+        [slim.batch_norm],
             scale=True, is_training=is_training, updates_collections=None):
         with slim.arg_scope(
-                [slim.dropout],
+            [slim.dropout],
                 is_training=is_training, keep_prob=keep_prob) as bsc:
             return bsc
 
@@ -106,10 +130,10 @@ def densenet_arg_scope(weight_decay=0.004):
       An `arg_scope` to use for the inception v3 model.
     """
     with slim.arg_scope(
-            [slim.conv2d],
-            weights_initializer=tf.contrib.layers.variance_scaling_initializer(
-                factor=2.0, mode='FAN_IN', uniform=False),
-            activation_fn=None, biases_initializer=None, padding='same',
+        [slim.conv2d],
+        weights_initializer=tf.contrib.layers.variance_scaling_initializer(
+            factor=2.0, mode='FAN_IN', uniform=False),
+        activation_fn=None, biases_initializer=None, padding='same',
             stride=1) as sc:
         return sc
 
