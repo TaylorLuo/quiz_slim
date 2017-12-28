@@ -41,8 +41,10 @@ def transition_layer(net, growth, scope='transition'):
     net = Average_pooling(net, pool_size=[2, 2], stride=2)
     return net
 
+
 def Max_Pooling(x, pool_size=[3, 3], stride=2, padding='VALID'):
     return tf.layers.max_pooling2d(inputs=x, pool_size=pool_size, strides=stride, padding=padding)
+
 
 def Average_pooling(x, pool_size=[2, 2], stride=2, padding='VALID'):
     return tf.layers.average_pooling2d(inputs=x, pool_size=pool_size, strides=stride, padding=padding)
@@ -78,22 +80,28 @@ def densenet(images, num_classes=1001, is_training=False,
     with tf.variable_scope(scope, 'DenseNet', [images, num_classes]):
         with slim.arg_scope(bn_drp_scope(is_training=is_training,
                                          keep_prob=dropout_keep_prob)) as ssc:
-            # init convolution
+            # init convolution 224x224x3f-->112x112x48f
             end_point = 'Conv_0_2g_3x3'
-            net = slim.conv2d(images, 2*growth, [7, 7], stride=2, scope=end_point)
+            net = slim.conv2d(images, 2 * growth, [7, 7], stride=2, scope=end_point)
             end_points[end_point] = net
-            # init pooling
+            # init pooling  112x112x48f-->56x56x48f
             end_point = 'Pool_0_2d_3x3'
-            net = Max_Pooling(net, pool_size=[3,3], stride=2)
+            net = Max_Pooling(net, pool_size=[3, 3], stride=2)
             end_points[end_point] = net
-            # dense block 0  56x56x96f->56x56x24f
-            net = block(net, 6, growth, scope='block')
-            net = transition_layer(net, growth,  scope='transition')
-            net = block(net, 12, growth, scope='block')
-            net = transition_layer(net, growth, scope='transition')
-            net = block(net, 48, growth, scope='block')
-            net = transition_layer(net, growth, scope='transition')
-            net = block(net, 32, growth, scope='block')
+            # dense_1  56x56x48f-->56x56x96f-->56x56x24f
+            net = block(net, 6, growth, scope='dense_1')
+            # trans_1  56x56x24f-->28x28x24f
+            net = transition_layer(net, growth, scope='trans_1')
+            # dense_2  28x28x24f-->28x28x96f-->28x28x24f
+            net = block(net, 12, growth, scope='dense_2')
+            # trans_2  28x28x24f-->14x14x24f
+            net = transition_layer(net, growth, scope='trans_2')
+            # dense_3  14x14x24f-->14x14x96f-->14x14x24f
+            net = block(net, 48, growth, scope='dense_3')
+            # trans_3  14x14x24f-->7x7x24f
+            net = transition_layer(net, growth, scope='trans_3')
+            # dense_final
+            net = block(net, 32, growth, scope='dense_final')
             net = slim.batch_norm(net, scope=scope + '_bn')
             logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None,
                                  normalizer_fn=None, scope='Conv2d_1c_1x1')
