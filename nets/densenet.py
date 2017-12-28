@@ -38,16 +38,18 @@ consists: BN-Conv(1X1)-Pool(2X2)
 
 def transition_layer(net, growth, scope='transition'):
     net = bn_act_conv_drp(net, growth, [1, 1], scope=scope + '_conv1x1' + str(0))
-    net = Average_pooling(net, pool_size=[2, 2], stride=2)
+    net = slim.avg_pool2d(net, [2, 2], stride=2, padding='VALID')
     return net
 
 
-def Max_Pooling(x, pool_size=[3, 3], stride=2, padding='VALID'):
-    return tf.layers.max_pooling2d(inputs=x, pool_size=pool_size, strides=stride, padding=padding)
-
-
-def Average_pooling(x, pool_size=[2, 2], stride=2, padding='VALID'):
-    return tf.layers.average_pooling2d(inputs=x, pool_size=pool_size, strides=stride, padding=padding)
+def _reduced_kernel_size_for_small_input(input_tensor, kernel_size):
+    shape = input_tensor.get_shape().as_list()
+    if shape[1] is None or shape[2] is None:
+        kernel_size_out = kernel_size
+    else:
+        kernel_size_out = [min(shape[1], kernel_size[0]),
+                           min(shape[2], kernel_size[1])]
+    return kernel_size_out
 
 
 def densenet(images, num_classes=1001, is_training=False,
@@ -86,25 +88,34 @@ def densenet(images, num_classes=1001, is_training=False,
             end_points[end_point] = net
             # init pooling  112x112x48f-->56x56x48f
             end_point = 'Pool_0_2d_3x3'
-            net = Max_Pooling(net, pool_size=[3, 3], stride=2)
+            net = slim.max_pool2d(net, [3, 3], stride=2, scope=end_point, padding='SAME')
             end_points[end_point] = net
-            # dense_1  56x56x48f-->56x56x96f-->56x56x24f
+            # dense_1  56x56x48f-->56x56x96f-->56x56x24f   *6
             net = block(net, 6, growth, scope='dense_1')
             # trans_1  56x56x24f-->28x28x24f
             net = transition_layer(net, growth, scope='trans_1')
-            # dense_2  28x28x24f-->28x28x96f-->28x28x24f
+            # dense_2  28x28x24f-->28x28x96f-->28x28x24f   *12
             net = block(net, 12, growth, scope='dense_2')
             # trans_2  28x28x24f-->14x14x24f
             net = transition_layer(net, growth, scope='trans_2')
-            # dense_3  14x14x24f-->14x14x96f-->14x14x24f
+            # dense_3  14x14x24f-->14x14x96f-->14x14x24f   *48
             net = block(net, 48, growth, scope='dense_3')
             # trans_3  14x14x24f-->7x7x24f
             net = transition_layer(net, growth, scope='trans_3')
-            # dense_final
+            # dense_final 7x7x24f  *32
             net = block(net, 32, growth, scope='dense_final')
-            net = slim.batch_norm(net, scope=scope + '_bn')
+            kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
+            # 1x1x24f
+            net = slim.avg_pool2d(net, kernel_size, padding='VALID',
+                                  scope='AvgPool_1a_{}x{}'.format(*kernel_size))
+            end_points['AvgPool_1a'] = net
+            net = slim.dropout(net, scope=scope + '_dropout')
+            end_points['PreLogits'] = net
             logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None,
                                  normalizer_fn=None, scope='Conv2d_1c_1x1')
+            logits = tf.squeeze(logits, [1, 2], name='SpatialSqueeze')
+            end_points['Logits'] = logits
+            end_points['Predictions'] = slim.softmax(logits, scope='Predictions')
     return logits, end_points
 
 
