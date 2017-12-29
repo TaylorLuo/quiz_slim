@@ -49,7 +49,7 @@ python train_image_classifier.py \
   --save_summaries_secs=120 \
   --log_every_n_steps=100 \
   --optimizer=sgd \
-  --learning_rate=0.01 \
+  --learning_rate=0.1 \
   --learning_rate_decay_factor=0.1 \
   --num_epochs_per_decay=200 \
   --weight_decay=0.004

@@ -29,6 +29,10 @@ Please see the tutorial and website for a detailed description of how
 to use this script to perform image recognition.
 
 https://tensorflow.org/tutorials/image_recognition/
+
+execute script:
+python classify_image.py --model_file=frozen_model.ckpt-4382.pb --label_file="F:\\002---study\\00AA_AI\\CSDN\\tmp\\cifar10\\labels.txt" --image_file="F:\\002---study\\00AA_AI\\CSDN\\tmp\\pic_path\\testcat.jpg"
+
 """
 
 from __future__ import absolute_import
