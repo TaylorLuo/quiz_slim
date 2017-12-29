@@ -25,10 +25,10 @@
 set -e
 
 # Where the checkpoint and logs will be saved to.
-TRAIN_DIR=/tmp/cifarnet-model
+TRAIN_DIR=F:\\002---study\\00AA_AI\\CSDN\\tmp\\cifarnet-model
 
 # Where the dataset is saved to.
-DATASET_DIR=/tmp/cifar10
+DATASET_DIR=F:\\002---study\\00AA_AI\\CSDN\\tmp\\cifar10
 
 # Download the dataset
 python download_and_convert_data.py \
@@ -49,7 +49,7 @@ python train_image_classifier.py \
   --save_summaries_secs=120 \
   --log_every_n_steps=100 \
   --optimizer=sgd \
-  --learning_rate=0.1 \
+  --learning_rate=0.01 \
   --learning_rate_decay_factor=0.1 \
   --num_epochs_per_decay=200 \
   --weight_decay=0.004
