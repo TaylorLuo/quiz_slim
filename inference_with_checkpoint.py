@@ -13,7 +13,7 @@ tf.app.flags.DEFINE_string('dataset_dir', 'F:\\002---study\\00AA_AI\\CSDN\\tmp\\
 tf.app.flags.DEFINE_string('model_name', 'cifarnet', '')
 tf.app.flags.DEFINE_string('output_file', 'F:\\002---study\\00AA_AI\\CSDN\\tmp\\cifar10\\output.pb', '')
 tf.app.flags.DEFINE_string('checkpoint_path', 'F:\\002---study\\00AA_AI\\CSDN\\tmp\\cifarnet-model', '')
-tf.app.flags.DEFINE_string('pic_path', 'F:\\002---study\\00AA_AI\\CSDN\\tmp\\pic_path\\testcat.jpg', '')
+tf.app.flags.DEFINE_string('pic_path', 'F:\\002---study\\00AA_AI\\CSDN\\tmp\\pic_path\\test.jpg', '')
 
 FLAGS = tf.app.flags.FLAGS
 is_training = False
