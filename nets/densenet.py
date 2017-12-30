@@ -130,13 +130,22 @@ def densenet(images, num_classes=1001, is_training=False,
             net = block(net, 32, growth, scope=end_point)
             end_points[end_point] = net
 
-            kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
-            # 1x1x1440f
-            net = slim.avg_pool2d(net, kernel_size, padding='VALID',
-                                  scope='AvgPool_1a_{}x{}'.format(*kernel_size))
-            end_points['AvgPool_1a'] = net
-            net = slim.dropout(net, scope=scope + '_dropout')
-            end_points['PreLogits'] = net
+            # 乘以固定尺寸 来变为1x1
+            # kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
+            # # 1x1x1440f
+            # net = slim.avg_pool2d(net, kernel_size, padding='VALID',
+            #                       scope='AvgPool_1a_{}x{}'.format(*kernel_size))
+            # end_points['AvgPool_1a'] = net
+
+            # 全局平均池化 来变为1x1
+            end_point = 'Global_avg_pooling'
+            net = tf.reduce_mean(net, [1, 2], keep_dims=True, scope=end_point)
+            end_points[end_point] = net
+
+            end_point = 'dropout'
+            net = slim.dropout(net, scope=end_point)
+            end_points[end_point] = net
+
             logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None,
                                  normalizer_fn=None, scope='Conv2d_1c_1x1')
             logits = tf.squeeze(logits, [1, 2], name='SpatialSqueeze')
