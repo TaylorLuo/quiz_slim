@@ -30,14 +30,21 @@ def block(net, layers, growth, scope='block'):
     return net
 
 
+compression_rate = 0.5
+
+
+def reduce_dim(input_feature):
+    return int(int(input_feature.shape[-1]) * compression_rate)
+
+
 """
 do convolution and pooling
 consists: BN-Conv(1X1)-Pool(2X2)
 """
 
 
-def transition_layer(net, growth, scope='transition'):
-    net = bn_act_conv_drp(net, growth, [1, 1], scope=scope + '_conv1x1' + str(0))
+def transition_layer(net, scope='transition'):
+    net = bn_act_conv_drp(net, reduce_dim(net), [1, 1], scope=scope + '_conv1x1' + str(0))
     net = slim.avg_pool2d(net, [2, 2], stride=2, padding='VALID')
     return net
 
@@ -72,10 +79,6 @@ def densenet(images, num_classes=1001, is_training=False,
         activation.
     """
     growth = 24
-    compression_rate = 0.5
-
-    def reduce_dim(input_feature):
-        return int(int(input_feature.shape[-1]) * compression_rate)
 
     end_points = {}
 
@@ -83,29 +86,52 @@ def densenet(images, num_classes=1001, is_training=False,
         with slim.arg_scope(bn_drp_scope(is_training=is_training,
                                          keep_prob=dropout_keep_prob)) as ssc:
             # init convolution 224x224x3f-->112x112x48f
-            end_point = 'Conv_0_2g_3x3'
+            end_point = 'Conv_0_2g_7x7'
             net = slim.conv2d(images, 2 * growth, [7, 7], stride=2, scope=end_point)
             end_points[end_point] = net
+
             # init pooling  112x112x48f-->56x56x48f
             end_point = 'Pool_0_2d_3x3'
             net = slim.max_pool2d(net, [3, 3], stride=2, scope=end_point, padding='SAME')
             end_points[end_point] = net
-            # dense_1  56x56x48f-->56x56x96f-->56x56x24f   *6
-            net = block(net, 6, growth, scope='dense_1')
-            # trans_1  56x56x24f-->28x28x24f
-            net = transition_layer(net, growth, scope='trans_1')
-            # dense_2  28x28x24f-->28x28x96f-->28x28x24f   *12
-            net = block(net, 12, growth, scope='dense_2')
-            # trans_2  28x28x24f-->14x14x24f
-            net = transition_layer(net, growth, scope='trans_2')
-            # dense_3  14x14x24f-->14x14x96f-->14x14x24f   *48
-            net = block(net, 48, growth, scope='dense_3')
-            # trans_3  14x14x24f-->7x7x24f
-            net = transition_layer(net, growth, scope='trans_3')
-            # dense_final 7x7x24f  *32
-            net = block(net, 32, growth, scope='dense_final')
+
+            # dense_1  56x56x48f-->56x56x192f  (48+24*6)
+            end_point = 'dense_1'
+            net = block(net, 6, growth, scope=end_point)
+            end_points[end_point] = net
+
+            # trans_1  56x56x192f-->56x56x96f-->28x28x96f
+            end_point = 'trans_1'
+            net = transition_layer(net, scope=end_point)
+            end_points[end_point] = net
+
+            # dense_2  28x28x96f-->28x28x384f    (96+24*12)
+            end_point = 'dense_2'
+            net = block(net, 12, growth, scope=end_point)
+            end_points[end_point] = net
+
+            # trans_2  28x28x384f-->28x28x192f-->14x14x192f
+            end_point = 'trans_2'
+            net = transition_layer(net, scope=end_point)
+            end_points[end_point] = net
+
+            # dense_3  14x14x192f-->14x14x1344f   (192+24*48)
+            end_point = 'dense_3'
+            net = block(net, 48, growth, scope=end_point)
+            end_points[end_point] = net
+
+            # trans_3  14x14x1344f-->14x14x672f-->7x7x672f
+            end_point = 'trans_3'
+            net = transition_layer(net, scope=end_point)
+            end_points[end_point] = net
+
+            # dense_final 7x7x672f-->7x7x1440f  (672+24*32)
+            end_point = 'dense_final'
+            net = block(net, 32, growth, scope=end_point)
+            end_points[end_point] = net
+
             kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
-            # 1x1x24f
+            # 1x1x1440f
             net = slim.avg_pool2d(net, kernel_size, padding='VALID',
                                   scope='AvgPool_1a_{}x{}'.format(*kernel_size))
             end_points['AvgPool_1a'] = net
