@@ -1,6 +1,7 @@
 ## 作业1
 
-作业实现步骤：
+作业1操作过程从本地到tinymind，有从tinymind到本地
+    作业实现步骤：
     1、fork quiz_slim 代码
     2、修改train_image_classifier.py 40行配置 clone_on_cpu 为 True
     3、下载数据集ai100-quiz-w7到本地目录
@@ -11,10 +12,10 @@
     8、上传本地目录train_dir/ckpt下最新checkpoint3文件到tinymind新建数据集 inceptionv4checkpoint
     9、将模型dataset_dir 设置为 /data/ai100/quiz-w7  checkpoint_path设置为 inceptionv4checkpoint
     10、新建运行
-
+    
     训练脚本：
     python train_eval_image_classifier.py --dataset_name=quiz --dataset_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\ai100-quiz-w7 --checkpoint_path=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\inception_v4\inception_v4.ckpt --model_name=inception_v4 --checkpoint_exclude_scopes=InceptionV4/Logits,InceptionV4/AuxLogits/Aux_logits --optimizer=rmsprop --train_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\inception_v4\train_dir\ckpt --learning_rate=0.001 --dataset_split_name=validation --eval_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\inception_v4\train_dir\eval --max_num_batches=128
-
+    
     临时查看预测结果：
     python eval_image_classifier.py --checkpoint_path=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\inception_v4\train_dir\ckpt --eval_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\inception_v4\train_dir\eval  --dataset_name=quiz  --dataset_split_name=validation  --dataset_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\ai100-quiz-w7  --model_name=inception_v4
 
@@ -37,10 +38,10 @@ densenet网络结构实现参考了论文中对于ImageNet数据集的实现方�
     5、全链接层：使用tf.layers.dense，将将输入tensor由[batch_size, 1, 1, 1440]变为[batch_size, 1, 1, 1000]
     6、对全链接层的数据加入dropout操作，防止过拟合
     7、Logits层，对dropout层的输出Tensor，执行分类操作
-
+    
     执行脚本：
     python train_eval_image_classifier.py --dataset_name=quiz --dataset_dir=H:\\000---Study\\3_Python-ML\\CSDN\\HomeWork\Week_07\\ai100-quiz-w7 --model_name=densenet --train_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\ckpt --learning_rate=0.001 --dataset_split_name=validation --eval_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\eval --max_num_batches=128
-
+    
     临时查看预测结果：
     python eval_image_classifier.py --checkpoint_path=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\desenet\train_dir\ckpt --eval_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\desenet\train_dir\eval  --dataset_name=quiz  --dataset_split_name=validation  --dataset_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\ai100-quiz-w7  --model_name=densenet --batch_size=32 --max_num_batches=128
 
