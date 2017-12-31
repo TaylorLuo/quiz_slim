@@ -1,6 +1,6 @@
 ## 作业1
 
-作业1操作过程从本地到tinymind，有从tinymind到本地。
+作业1操作过程从本地到tinymind，又从tinymind到本地。
 
     
     作业实现步骤：
