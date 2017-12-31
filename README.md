@@ -40,6 +40,6 @@ densenet网络结构实现参考了论文中对于ImageNet数据集的实现方�
     临时查看预测结果：
     python eval_image_classifier.py --checkpoint_path=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\desenet\train_dir\ckpt --eval_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\desenet\train_dir\eval  --dataset_name=quiz  --dataset_split_name=validation  --dataset_dir=H:\000---Study\3_Python-ML\CSDN\HomeWork\Week_07\ai100-quiz-w7  --model_name=densenet --batch_size=32 --max_num_batches=128
 
-
+PS: densenet.py实现过程中，有一些关于其他实现方法的注释、以及每一步tensor维度的变化，似懂非懂，希望助教老师帮我分析一下总结的对不对，谢谢。
 
 
