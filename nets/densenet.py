@@ -149,8 +149,8 @@ def densenet(images, num_classes=1001, is_training=False,
 
             # 全链接层
             # 该全链接层具有1000神经元
-            # 输入Tensor维度: [batch_size, 1x1x1440]
-            # 输出Tensor维度: [batch_size, 1x1x1000]
+            # 输入Tensor维度: [batch_size, 1, 1, 1440]
+            # 输出Tensor维度: [batch_size, 1, 1, 1000]
             net = tf.layers.dense(inputs=net, units=1000, activation=tf.nn.relu)
 
             # 对全链接层的数据加入dropout操作，防止过拟合
