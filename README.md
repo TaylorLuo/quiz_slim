@@ -1,6 +1,8 @@
 ## 作业1
 
-作业1操作过程从本地到tinymind，有从tinymind到本地
+作业1操作过程从本地到tinymind，有从tinymind到本地。
+
+    
     作业实现步骤：
     1、fork quiz_slim 代码
     2、修改train_image_classifier.py 40行配置 clone_on_cpu 为 True
