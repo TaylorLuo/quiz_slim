@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from tensorflow.contrib.layers import flatten
 
 import tensorflow as tf
 
@@ -132,26 +133,54 @@ def densenet(images, num_classes=1001, is_training=False,
             net = block(net, 32, growth, scope=end_point)
             end_points[end_point] = net
 
-            # 1.乘以固定尺寸 来变为bx1x1x1440
-            # kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
-            # # 1x1x1440f
-            # net = slim.avg_pool2d(net, kernel_size, padding='VALID',
-            #                       scope='AvgPool_1a_{}x{}'.format(*kernel_size))
-            # end_points['AvgPool_1a'] = net
+            # ######方法一 ===开始===#####
+            # # 1.乘以固定尺寸 来变为bx1x1x1440
+            # # kernel_size = _reduced_kernel_size_for_small_input(net, [7, 7])
+            # # # 1x1x1440f
+            # # net = slim.avg_pool2d(net, kernel_size, padding='VALID',
+            # #                       scope='AvgPool_1a_{}x{}'.format(*kernel_size))
+            # # end_points['AvgPool_1a'] = net
+            #
+            # # 2.全局平均池化 来变为bx1x1x1440f
+            # # 这种方法，在长宽不是很大的时候，相比flatten方式有效降低了数据量又不损失太多信息  bx7x7x1440-->bx1x1x1440  减少了49倍
+            # end_point = 'Global_avg_pooling'
+            # net = tf.reduce_mean(net, [1, 2], keep_dims=True, name=end_point)
+            # end_points[end_point] = net
+            #
+            # # 3.全局平均池化方法二   from tflearn.layers.conv import global_avg_pool
+            # # global_avg_pool(x, name='Global_avg_pooling')
+            #
+            # # 全链接层
+            # # 该全链接层具有1000神经元
+            # # 输入Tensor维度: [batch_size, 1, 1, 1440]
+            # # 输出Tensor维度: [batch_size, 1, 1, 1000]
+            # net = tf.layers.dense(inputs=net, units=1000, activation=tf.nn.relu)
+            #
+            # # 对全链接层的数据加入dropout操作，防止过拟合
+            # end_point = 'dropout'
+            # net = slim.dropout(net, scope=end_point)
+            # end_points[end_point] = net
+            #
+            # # Logits层，对dropout层的输出Tensor，执行分类操作
+            # logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='Conv2d_1c_1x1')
+            #
+            # logits = tf.squeeze(logits, [1, 2], name='SpatialSqueeze')
+            # ######方法一 ===结束===#####
 
-            # 2.全局平均池化 来变为bx1x1x1440f
-            end_point = 'Global_avg_pooling'
-            net = tf.reduce_mean(net, [1, 2], keep_dims=True, name=end_point)
+
+            ######方法二 ===开始===#####
+            # 将Tensor[batch_size, 7, 7, 1440]变为[batch_size, 7 * 7 * 1440]方法
+            # 等同于tf.reshape(net, [-1, 7 * 7 * 1440])
+            end_point = 'flatten'
+            net = flatten(net)
             end_points[end_point] = net
 
-            # 3.全局平均池化方法二   from tflearn.layers.conv import global_avg_pool
-            # global_avg_pool(x, name='Global_avg_pooling')
-
             # 全链接层
-            # 该全链接层具有1000神经元
-            # 输入Tensor维度: [batch_size, 1, 1, 1440]
-            # 输出Tensor维度: [batch_size, 1, 1, 1000]
+            # 输入Tensor维度: [batch_size, 7 * 7 * 1440]
+            # 输出Tensor维度: [batch_size, 7 * 7 * 1000]
+            end_point = 'dense'
             net = tf.layers.dense(inputs=net, units=1000, activation=tf.nn.relu)
+            end_points[end_point] = net
 
             # 对全链接层的数据加入dropout操作，防止过拟合
             end_point = 'dropout'
@@ -159,25 +188,10 @@ def densenet(images, num_classes=1001, is_training=False,
             end_points[end_point] = net
 
             # Logits层，对dropout层的输出Tensor，执行分类操作
-            logits = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, normalizer_fn=None, scope='Conv2d_1c_1x1')
-
-            logits = tf.squeeze(logits, [1, 2], name='SpatialSqueeze')
-
-
-            # layers实现方式
-            # 变为[batch_size, 7 * 7 * 1440]方法
-            # net = flatten(net)   等同于tf.reshape(net, [-1, 7 * 7 * 1440])
-
-            # 全链接层
-            # 输入Tensor维度: [batch_size, 7 * 7 * 1440]
-            # 输出Tensor维度: [batch_size, 7 * 7 * 1000]
-            # net = tf.layers.dense(inputs=net, units=1000, activation=tf.nn.relu)
-
-            # 对全链接层的数据加入dropout操作，防止过拟合
-            # 略
-
-            # Logits层，对dropout层的输出Tensor，执行分类操作
-            # logits = tf.layers.dense(inputs=net, units=num_classes)
+            end_point = 'dense_logits'
+            logits = tf.layers.dense(inputs=net, units=num_classes)
+            end_points[end_point] = net
+            ######方法二 ===结束===#####
 
             end_points['Logits'] = logits
             end_points['Predictions'] = slim.softmax(logits, scope='Predictions')
