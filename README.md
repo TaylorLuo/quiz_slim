@@ -37,9 +37,16 @@ densenet网络结构实现参考了论文中对于ImageNet数据集的实现方�
     2、3个transition layers:trans_1、trans_2、trans_3
     3、进入dense_1之前，对输入数据进行了reshape，然后进行了 7×7 conv, stride 2 和 3×3 max pool, stride 2
     4、在dense_final之后，用一个全局平均池化Global_avg_pooling将输入tensor由[batch_size, 7, 7, 1440]变为[batch_size, 1, 1, 1440]
-    5、全链接层：使用tf.layers.dense，将将输入tensor由[batch_size, 1, 1, 1440]变为[batch_size, 1, 1, 1000]
+    5、全链接层：使用tf.layers.dense，将输入tensor由[batch_size, 1, 1, 1440]变为[batch_size, 1, 1, 1000]
     6、对全链接层的数据加入dropout操作，防止过拟合
-    7、Logits层，对dropout层的输出Tensor，执行分类操作
+    7、Logits层：对dropout层的输出Tensor用num_classes个[1, 1]的卷积核进行卷积，即执行分类操作
+    8、移除尺寸为1的维度获得logits
+
+    方法二：
+    4、在dense_final之后，用layers.flatten将张量展开为[batch, 7*7*1440]  (等同于tf.reshape(net, [-1, 7 * 7 * 1440]))
+    5、全链接层：使用tf.layers.dense,将输入tensor由[batch, 7*7*1440]变为[batch, 7*7*1000]，注意加激活函数tf.nn.relu
+    6、对全链接层的数据加入dropout操作，防止过拟合
+    7、Logits层：还是一个全链接，使用tf.layers.dense，将输入tensor由[batch_size, 7*7*1000]变为[batch_size, num_classes]，注意不要加激活函数
     
     执行脚本：
     python train_eval_image_classifier.py --dataset_name=quiz --dataset_dir=H:\\000---Study\\3_Python-ML\\CSDN\\HomeWork\Week_07\\ai100-quiz-w7 --model_name=densenet --train_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\ckpt --learning_rate=0.001 --dataset_split_name=validation --eval_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\eval --max_num_batches=128

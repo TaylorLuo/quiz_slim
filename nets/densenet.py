@@ -189,7 +189,7 @@ def densenet(images, num_classes=1001, is_training=False,
 
             # Logits层，对dropout层的输出Tensor，执行分类操作
             end_point = 'dense_logits'
-            logits = tf.layers.dense(inputs=net, units=num_classes)
+            logits = tf.layers.dense(inputs=net, units=num_classes, activation=None)
             end_points[end_point] = net
             ######方法二 ===结束===#####
 
