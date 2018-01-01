@@ -47,6 +47,8 @@ densenet网络结构实现参考了论文中对于ImageNet数据集的实现方�
     5、全链接层：使用tf.layers.dense,将输入tensor由[batch, 7*7*1440]变为[batch, 7*7*1000]，注意加激活函数tf.nn.relu
     6、对全链接层的数据加入dropout操作，防止过拟合
     7、Logits层：还是一个全链接，使用tf.layers.dense，将输入tensor由[batch_size, 7*7*1000]变为[batch_size, num_classes]，注意不要加激活函数
+
+    PS：通过对比可以得出，方法一比方法二数据量减少了49倍，但实验证明，在长宽不是很大时，信息损失可以忽略不计，所以推荐用全局平均池化的方式
     
     执行脚本：
     python train_eval_image_classifier.py --dataset_name=quiz --dataset_dir=H:\\000---Study\\3_Python-ML\\CSDN\\HomeWork\Week_07\\ai100-quiz-w7 --model_name=densenet --train_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\ckpt --learning_rate=0.001 --dataset_split_name=validation --eval_dir=H:\\000---Study\\3_Python-ML\\CSDN\HomeWork\\Week_07\\desenet\\train_dir\\eval --max_num_batches=128
